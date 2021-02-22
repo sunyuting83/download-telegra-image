@@ -28,10 +28,13 @@ func Scrape(cors bool, url string) ([]string, string, bool) {
 	// Load the HTML document
 	doc, _ := goquery.NewDocumentFromReader(res.Body)
 	title := doc.Find("article#_tl_editor  h1").Text()
+	if strings.Contains(title, "视频") {
+		n := strings.LastIndex(title, "视频")
+		title = title[0:n]
+	}
 	title = strings.Replace(title, " ", "_", -1)
-	if strings.Contains(title, "视频在@") {
-		n := strings.LastIndex(title, "视频在")
-		title = title[0 : n-3]
+	if strings.LastIndex(title, "_") == len(title)-1 {
+		title = strings.TrimRight(title, "_")
 	}
 	doc.Find("article#_tl_editor img").Each(func(i int, s *goquery.Selection) {
 		src, _ := s.Attr("src")

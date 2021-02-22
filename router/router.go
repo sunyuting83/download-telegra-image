@@ -8,13 +8,13 @@ import (
 )
 
 // InitRouter make router
-func InitRouter() *gin.Engine {
+func InitRouter(d string) *gin.Engine {
 	// router := gin.New()
 	router := gin.Default()
 	api := router.Group("/api")
 	api.Use(utils.CORSMiddleware())
 	{
-		api.GET("/download", controller.Download)
+		api.GET("/download", utils.SetConfigMiddleWare(d), controller.Download)
 	}
 
 	return router
