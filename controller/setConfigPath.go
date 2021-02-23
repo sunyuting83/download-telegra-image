@@ -51,7 +51,7 @@ func SetConfigPathData(c *gin.Context) {
 	config.PathList = append(config.PathList, utils.Path{Title: title, Path: form.PATH})
 	jsonFile := strings.Join([]string{runPath.(string), "config.json"}, "/")
 	saveData, _ := json.Marshal(config)
-	_ = ioutil.WriteFile(jsonFile, saveData, 0755)
+	_ = ioutil.WriteFile(jsonFile, saveData, 0644)
 	data := gin.H{
 		"status":  200,
 		"message": "OK",

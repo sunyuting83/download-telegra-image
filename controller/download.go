@@ -1,15 +1,30 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"pulltg/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+// TempData temp data
+type TempData struct {
+	Running []SaveData `json:"running"`
+	Done    []SaveData `json:"done"`
+}
+
+// SaveData save data
+type SaveData struct {
+	Total     int    `json:"total"`
+	Completed int    `json:"completed"`
+	Key       string `json:"key"`
+	Path      string `json:"path"`
+}
 
 // Download download
 func Download(c *gin.Context) {
@@ -65,23 +80,18 @@ func Download(c *gin.Context) {
 		c.JSON(http.StatusOK, errs)
 		return
 	}
-	fmt.Println("start")
-	/*
-		在这个地方存一个零时Cache.
-		key保存下载目录md5值
-		value json
-		{
-			"total": 76,
-			"completed": 0,
-			"error": [],
-			"retry": 3
-		}
-		单独写一个router用于check状态。计算百分比。传入参数：md5值
-		下面的返回值中加入 key md5值
-	*/
+	// save data to file
+	dataFileName := strings.Join([]string{config.RunPath, config.DataFile}, "/")
+	fmt.Println(utils.MakeMD5(DownloadPath))
+	df := GetDataFile(dataFileName)
+	df.Running = append(df.Running, SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
+	saveData, _ := json.Marshal(df)
+	_ = ioutil.WriteFile(dataFileName, saveData, 0644)
 
-	os.MkdirAll(DownloadPath, os.ModePerm)
-	go DownloadImages(data, DownloadPath)
+	// make download path
+	// os.MkdirAll(DownloadPath, os.ModePerm)
+	// start download
+	go DownloadImages(data, DownloadPath, dataFileName)
 	datas := gin.H{
 		"status": 200,
 		"data":   data,

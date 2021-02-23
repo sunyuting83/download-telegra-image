@@ -7,6 +7,8 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -20,6 +22,7 @@ type Config struct {
 	PathList []Path `json:"pathList"`
 	Cors     string `json:"cors"`
 	RootURL  string `json:"rooturl"`
+	DataFile string `json:"dataFile"`
 }
 
 // Path path
@@ -142,9 +145,9 @@ func AesDecrypt(crypted, key []byte) ([]byte, error) {
 
 // MakeMD5 make md5
 func MakeMD5(s string) (m string) {
-	data := []byte(s)
-	hash := md5.New()
-	m = string(hash.Sum(data))
+	w := md5.New()
+	io.WriteString(w, s)
+	m = fmt.Sprintf("%x", w.Sum(nil))
 	return
 }
 
