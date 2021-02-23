@@ -18,6 +18,7 @@ func InitRouter(d string) *gin.Engine {
 		api.GET("/getconfig", controller.GetConfigData)
 		api.GET("/getpath", controller.GetPathData)
 		api.GET("/getrootpath", controller.GetRootPathData)
+		api.PUT("/setconfig", controller.SetConfigPathData)
 	}
 
 	return router

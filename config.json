@@ -1,11 +1,1 @@
-{
-  "runPath":"~/Works/go/pullTG",
-  "pathList":[
-    {
-      "title":"downtest",
-      "path":"/home/sun/Documents/home"
-    }
-  ],
-  "cors": "https://cors.izumana.ml",
-  "rooturl": "https://telegra.ph"
-}
+{"runPath":"~/Works/go/src/pulltg","pathList":[{"title":"downtest","path":"/home/sun/文档/somefile/downtest"}],"cors":"https://cors.izumana.ml","rooturl":"https://telegra.ph"}

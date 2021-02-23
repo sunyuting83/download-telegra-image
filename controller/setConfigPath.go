@@ -30,7 +30,7 @@ func SetConfigPathData(c *gin.Context) {
 	if len(form.PATH) <= 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":  1,
-			"message": "haven't node",
+			"message": "haven't path",
 		})
 		return
 	}
@@ -62,10 +62,12 @@ func SetConfigPathData(c *gin.Context) {
 
 // checkHasPath check has path
 func checkHasPath(p string, list *utils.Config) bool {
+	var x bool = false
 	for _, item := range list.PathList {
-		if p != item.Path {
-			return true
+		if p == item.Path {
+			x = true
+			break
 		}
 	}
-	return false
+	return x
 }
