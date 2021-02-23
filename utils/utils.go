@@ -147,3 +147,12 @@ func MakeMD5(s string) (m string) {
 	m = string(hash.Sum(data))
 	return
 }
+
+// IsDir Is Dir
+func IsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return s.IsDir()
+}

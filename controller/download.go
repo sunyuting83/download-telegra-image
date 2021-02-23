@@ -32,11 +32,6 @@ func Download(c *gin.Context) {
 		c.JSON(http.StatusOK, errs)
 		return
 	}
-	// mounts, _ := gofstab.ParseSystem()
-
-	// for _, val := range mounts {
-	// 	fmt.Printf("%v\n", val.File)
-	// }
 	if len(u) <= 0 {
 		errs = GetErrorMessage("URL cannot be empty")
 		c.JSON(http.StatusOK, errs)

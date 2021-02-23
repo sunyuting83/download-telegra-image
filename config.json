@@ -1,9 +1,9 @@
 {
-  "runPath":"~/Works/go/src/pulltg",
+  "runPath":"~/Works/go/pullTG",
   "pathList":[
     {
       "title":"downtest",
-      "path":"/home/sun/文档/somefile/downtest"
+      "path":"/home/sun/Documents/home"
     }
   ],
   "cors": "https://cors.izumana.ml",
