@@ -5,5 +5,7 @@
       "title":"downtest",
       "path":"/home/sun/文档/somefile/downtest"
     }
-  ]
+  ],
+  "cors": "https://cors.izumana.ml",
+  "rooturl": "https://telegra.ph"
 }

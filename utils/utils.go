@@ -18,6 +18,8 @@ import (
 type Config struct {
 	RunPath  string `json:"runPath"`
 	PathList []Path `json:"pathList"`
+	Cors     string `json:"cors"`
+	RootURL  string `json:"rooturl"`
 }
 
 // Path path

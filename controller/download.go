@@ -47,12 +47,12 @@ func Download(c *gin.Context) {
 		c.JSON(http.StatusOK, errs)
 		return
 	}
-	if !strings.Contains(u, "https://telegra.ph") {
+	if !strings.Contains(u, config.RootURL) {
 		errs = GetErrorMessage("URL must be telegra")
 		c.JSON(http.StatusOK, errs)
 		return
 	}
-	data, title, b := Scrape(x, u)
+	data, title, b := Scrape(x, u, config.Cors, config.RootURL)
 	DownloadPath := strings.Join([]string{downPath, title}, "/")
 	checkPath, err := utils.PathExists(DownloadPath)
 	if err != nil {

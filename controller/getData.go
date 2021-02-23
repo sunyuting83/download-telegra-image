@@ -8,13 +8,12 @@ import (
 )
 
 // Scrape get telegra page data
-func Scrape(cors bool, url string) ([]string, string, bool) {
+func Scrape(cors bool, url string, corsURL string, rootURL string) ([]string, string, bool) {
 	// Request the HTML page.
-	var rootURL string = "https://telegra.ph"
 	// var findthis []string
 	if cors {
-		url = strings.Join([]string{"https://cors.izumana.ml", url}, "/?url=")
-		rootURL = strings.Join([]string{"https://cors.izumana.ml", rootURL}, "/?url=")
+		url = strings.Join([]string{corsURL, url}, "/?url=")
+		rootURL = strings.Join([]string{corsURL, rootURL}, "/?url=")
 	}
 	res, err := http.Get(url)
 	if err != nil {
