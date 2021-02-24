@@ -1,8 +1,8 @@
-package apis
+package controller
 
 import (
 	"net/http"
-	"webssh/controller/ws"
+	"pulltg/ws"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

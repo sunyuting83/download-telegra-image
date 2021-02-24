@@ -3,7 +3,6 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
-	"webssh/controller/terminal"
 
 	"github.com/gorilla/websocket"
 )
@@ -93,7 +92,7 @@ func (c *Client) Read() {
 		if m == "ping" {
 			m = "ping"
 		}
-		send := terminal.RunCommand(m)
+		send := ""
 		if len(send) <= 0 {
 			send = "\n"
 		}
