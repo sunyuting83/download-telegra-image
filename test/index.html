@@ -21,6 +21,7 @@
   <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script>
     $(function () {
+
       // var opts={path: '/api/websocket'};
       // opts.transports=['websocket'];
       // var socket = io.connect('ws://127.0.0.1:3000',opts);
@@ -40,10 +41,19 @@
       //   console.log("what?")
       // });
       // 打开一个 web socket
-      var ws = new WebSocket("ws://localhost:3000/api/websocket");
+      var ws = new WebSocket("ws://localhost:13002/api/downlist");
+
+      ws.onopen = function() {
+        console.log("链接建立")
+      }
+
+      ws.onerror = function(err) {
+        console.log(err)
+      }
         
       ws.onmessage = function (evt) { 
         var received_msg = JSON.parse(evt.data);
+        console.log(evt.data);
         $('#messages').append(`<li>${received_msg.content}</li>`);
       };
       ws.onclose = function () {

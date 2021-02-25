@@ -48,9 +48,10 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 // SetConfigMiddleWare set config
-func SetConfigMiddleWare(d string) gin.HandlerFunc {
+func SetConfigMiddleWare(d, port string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("runPath", d)
+		c.Set("port", port)
 		c.Writer.Status()
 	}
 }

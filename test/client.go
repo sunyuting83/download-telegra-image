@@ -9,10 +9,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("addr", "127.0.0.1:3000", "http service address")
+var addr = flag.String("addr", "127.0.0.1:13002", "http service address")
 
 func main() {
-	u := url.URL{Scheme: "ws", Host: *addr, Path: "/api/websocket"}
+	u := url.URL{Scheme: "ws", Host: *addr, Path: "/api/downlist"}
 	var dialer *websocket.Dialer
 
 	conn, _, err := dialer.Dial(u.String(), nil)

@@ -8,11 +8,11 @@ import (
 )
 
 // InitRouter make router
-func InitRouter(d string) *gin.Engine {
+func InitRouter(d, port string) *gin.Engine {
 	// router := gin.New()
 	router := gin.Default()
 	api := router.Group("/api")
-	api.Use(utils.CORSMiddleware(), utils.SetConfigMiddleWare(d))
+	api.Use(utils.CORSMiddleware(), utils.SetConfigMiddleWare(d, port))
 	{
 		api.GET("/download", controller.Download)
 		api.GET("/getconfig", controller.GetConfigData)
