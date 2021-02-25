@@ -5,40 +5,51 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"pulltg/utils"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 // DownloadImages Download Images
-func DownloadImages(l []string, p, dataFile string) bool {
+func DownloadImages(l []string, p, dataFile, port string) bool {
+	addr := strings.Join([]string{"localhost", port}, ":")
+	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
+	var dialer *websocket.Dialer
+
+	conn, _, err := dialer.Dial(u.String(), nil)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
 	for i, item := range l {
 		wg.Add(1)
-		time.Sleep(time.Duration(3) * time.Second)
-		go SavePic(item, p, i, dataFile)
+		go SavePic(item, p, i, dataFile, conn)
 	}
 	wg.Wait()
-	ChangeDataStatus(dataFile, p)
-	fmt.Println("over")
+	ChangeDataStatus(dataFile, p, conn)
 	return true
 }
 
 var wg sync.WaitGroup
 
 //SavePic Save Pic
-func SavePic(url, path string, i int, dataFile string) {
+func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 	defer wg.Add(-1)
-	// resp, err := http.Get(url)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer resp.Body.Close()
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
 	n := strconv.Itoa(i + 1)
 	si := ZeroFill(n)
 	p := strings.Join([]string{path, "/"}, "")
@@ -58,11 +69,9 @@ func SavePic(url, path string, i int, dataFile string) {
 	_ = ioutil.WriteFile(dataFile, saveData, 0644)
 
 	time.Sleep(time.Duration(3) * time.Second)
-	// _ = ioutil.WriteFile(fileName, body, 0644)
-	fmt.Println(fileName)
-	/*
-		保存json completed + 1
-	*/
+	_ = ioutil.WriteFile(fileName, body, 0644)
+	conn.WriteMessage(websocket.TextMessage, saveData)
+	// fmt.Println(fileName)
 	return
 }
 
@@ -97,7 +106,7 @@ func GetDataFile(d string) (j TempData) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(dataFile, path string) {
+func ChangeDataStatus(dataFile, path string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
 	data := GetDataFile(dataFile)
 	Arrlen := len(data.Running)
@@ -115,7 +124,7 @@ func ChangeDataStatus(dataFile, path string) {
 		}
 	}
 	saveData, _ := json.Marshal(data)
-	fmt.Println(string(saveData))
 	_ = ioutil.WriteFile(dataFile, saveData, 0644)
+	conn.WriteMessage(websocket.TextMessage, saveData)
 	return
 }

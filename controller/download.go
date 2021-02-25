@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"pulltg/utils"
 	"strings"
 
@@ -87,11 +88,11 @@ func Download(c *gin.Context) {
 	df.Running = append(df.Running, SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
 	saveData, _ := json.Marshal(df)
 	_ = ioutil.WriteFile(dataFileName, saveData, 0644)
-
+	port, _ := c.Get("port")
 	// make download path
-	// os.MkdirAll(DownloadPath, os.ModePerm)
+	os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
-	go DownloadImages(data, DownloadPath, dataFileName)
+	go DownloadImages(data, DownloadPath, dataFileName, port.(string))
 	datas := gin.H{
 		"status": 200,
 		"data":   data,
