@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,20 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-// TempData temp data
-type TempData struct {
-	Running []SaveData `json:"running"`
-	Done    []SaveData `json:"done"`
-}
-
-// SaveData save data
-type SaveData struct {
-	Total     int    `json:"total"`
-	Completed int    `json:"completed"`
-	Key       string `json:"key"`
-	Path      string `json:"path"`
-}
 
 // Download download
 func Download(c *gin.Context) {
@@ -83,9 +68,9 @@ func Download(c *gin.Context) {
 	}
 	// save data to file
 	dataFileName := strings.Join([]string{config.RunPath, config.DataFile}, "/")
-	fmt.Println(utils.MakeMD5(DownloadPath))
-	df := GetDataFile(dataFileName)
-	df.Running = append(df.Running, SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
+	// fmt.Println(utils.MakeMD5(DownloadPath))
+	df := utils.GetDataFile(dataFileName)
+	df.Running = append(df.Running, utils.SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
 	saveData, _ := json.Marshal(df)
 	_ = ioutil.WriteFile(dataFileName, saveData, 0644)
 	port, _ := c.Get("port")

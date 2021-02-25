@@ -31,6 +31,20 @@ type Path struct {
 	Path  string `json:"path"`
 }
 
+// TempData temp data
+type TempData struct {
+	Running []SaveData `json:"running"`
+	Done    []SaveData `json:"done"`
+}
+
+// SaveData save data
+type SaveData struct {
+	Total     int    `json:"total"`
+	Completed int    `json:"completed"`
+	Key       string `json:"key"`
+	Path      string `json:"path"`
+}
+
 // CORSMiddleware cors middleware
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -159,4 +173,20 @@ func IsDir(path string) bool {
 		return false
 	}
 	return s.IsDir()
+}
+
+// GetDataFile get data file
+func GetDataFile(d string) (j TempData) {
+	data, _ := ioutil.ReadFile(d)
+	var (
+		index int = len(data)
+	)
+	index = bytes.IndexByte(data, 0)
+	if index != -1 {
+		data = data[:index]
+	}
+	if err := json.Unmarshal(data, &j); err != nil {
+		return
+	}
+	return
 }

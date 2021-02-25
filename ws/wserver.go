@@ -2,6 +2,8 @@ package ws
 
 import (
 	"encoding/json"
+	"pulltg/utils"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,9 +18,10 @@ type ClientManager struct {
 
 // Client is a websocket client
 type Client struct {
-	ID     string
-	Socket *websocket.Conn
-	Send   chan []byte
+	ID       string
+	Socket   *websocket.Conn
+	Send     chan []byte
+	RootPath string
 }
 
 // Message is an object for websocket message which is mapped to json type
@@ -87,8 +90,17 @@ func (c *Client) Read() {
 			break
 		}
 		m := string(message)
-		jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: m})
-		Manager.Broadcast <- jsonMessage
+		if m == "getdata" {
+			config := utils.GetConfig(c.RootPath)
+			dataFileName := strings.Join([]string{config.RunPath, config.DataFile}, "/")
+			df := utils.GetDataFile(dataFileName)
+			sendData, _ := json.Marshal(df)
+			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: string(sendData)})
+			Manager.Broadcast <- jsonMessage
+		} else {
+			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: m})
+			Manager.Broadcast <- jsonMessage
+		}
 	}
 }
 

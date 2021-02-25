@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -58,10 +57,10 @@ func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 	typ := strings.Join([]string{".", tp[tn]}, "")
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
-	data := GetDataFile(dataFile)
+	data := utils.GetDataFile(dataFile)
 	for i, item := range data.Running {
 		if item.Key == key {
-			data.Running[i] = SaveData{Total: item.Total, Completed: item.Completed + 1, Key: item.Key, Path: item.Path}
+			data.Running[i] = utils.SaveData{Total: item.Total, Completed: item.Completed + 1, Key: item.Key, Path: item.Path}
 			break
 		}
 	}
@@ -89,36 +88,20 @@ func ZeroFill(i string) (x string) {
 	return
 }
 
-// GetDataFile get data file
-func GetDataFile(d string) (j TempData) {
-	data, _ := ioutil.ReadFile(d)
-	var (
-		index int = len(data)
-	)
-	index = bytes.IndexByte(data, 0)
-	if index != -1 {
-		data = data[:index]
-	}
-	if err := json.Unmarshal(data, &j); err != nil {
-		return
-	}
-	return
-}
-
 // ChangeDataStatus change data status
 func ChangeDataStatus(dataFile, path string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
-	data := GetDataFile(dataFile)
+	data := utils.GetDataFile(dataFile)
 	Arrlen := len(data.Running)
 	for i, item := range data.Running {
 		if item.Key == key {
 			if i == Arrlen-1 {
 				data.Running = data.Running[0:i]
-				data.Done = append(data.Done, SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				data.Done = append(data.Done, utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
 				break
 			} else {
 				data.Running = append(data.Running[0:i], data.Running[i+1:]...)
-				data.Done = append(data.Done, SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				data.Done = append(data.Done, utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
 				break
 			}
 		}

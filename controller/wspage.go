@@ -17,8 +17,9 @@ func WsPage(c *gin.Context) {
 		http.NotFound(c.Writer, c.Request)
 		return
 	}
+	runPath, _ := c.Get("runPath")
 	// websocket connect
-	client := &ws.Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte)}
+	client := &ws.Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte), RootPath: runPath.(string)}
 
 	ws.Manager.Register <- client
 
