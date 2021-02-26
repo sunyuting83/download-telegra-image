@@ -12,8 +12,9 @@ import (
 func InitRouter(d, port string) *gin.Engine {
 	// router := gin.New()
 	router := gin.Default()
+	router.Use(cors.Default())
 	api := router.Group("/api")
-	api.Use(cors.Default(), utils.SetConfigMiddleWare(d, port))
+	api.Use(utils.SetConfigMiddleWare(d, port))
 	{
 		api.GET("/download", controller.Download)
 		api.GET("/getconfig", controller.GetConfigData)
