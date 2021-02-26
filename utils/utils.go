@@ -23,7 +23,7 @@ type Config struct {
 	PathList    []Path `json:"pathList"`
 	Cors        string `json:"cors"`
 	RootURL     string `json:"rooturl"`
-	RunningFile string `json:"runngingFile"`
+	RunningFile string `json:"runningFile"`
 	DoneFile    string `json:"doneFile"`
 }
 

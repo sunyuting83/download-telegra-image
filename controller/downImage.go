@@ -23,11 +23,11 @@ func DownloadImages(l []string, p, dataFile, port, doneFileName string) bool {
 
 	conn, _, err := dialer.Dial(u.String(), nil)
 	if err != nil {
-		fmt.Println(err)
 		return false
 	}
 	for i, item := range l {
 		wg.Add(1)
+		// time.Sleep(time.Duration(3) * time.Second)
 		go SavePic(item, p, i, dataFile, conn)
 	}
 	wg.Wait()
@@ -99,11 +99,11 @@ func ChangeDataStatus(dataFile, path, doneFileName string, conn *websocket.Conn)
 		if item.Key == key {
 			if i == Arrlen-1 {
 				data = data[0:i]
-				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path, Percent: 100})
 				break
 			} else {
 				data = append(data[0:i], data[i+1:]...)
-				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path, Percent: 100})
 				break
 			}
 		}
@@ -111,7 +111,7 @@ func ChangeDataStatus(dataFile, path, doneFileName string, conn *websocket.Conn)
 	saveData, _ := json.Marshal(data)
 	_ = ioutil.WriteFile(dataFile, saveData, 0644)
 	doneData, _ := json.Marshal(done)
-	_ = ioutil.WriteFile(dataFile, doneData, 0644)
+	_ = ioutil.WriteFile(doneFileName, doneData, 0644)
 	conn.WriteMessage(websocket.TextMessage, saveData)
 	return
 }
