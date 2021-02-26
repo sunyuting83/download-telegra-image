@@ -66,18 +66,20 @@ func Download(c *gin.Context) {
 		c.JSON(http.StatusOK, errs)
 		return
 	}
-	// save data to file
-	dataFileName := strings.Join([]string{config.RunPath, config.DataFile}, "/")
+	// save running data to file
+	dataFileName := strings.Join([]string{config.RunPath, config.RunningFile}, "/")
+	// save done data to file
+	doneFileName := strings.Join([]string{config.RunPath, config.DoneFile}, "/")
 	// fmt.Println(utils.MakeMD5(DownloadPath))
 	df := utils.GetDataFile(dataFileName)
-	df.Running = append(df.Running, utils.SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
+	df = append(df, &utils.SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
 	saveData, _ := json.Marshal(df)
 	_ = ioutil.WriteFile(dataFileName, saveData, 0644)
 	port, _ := c.Get("port")
 	// make download path
 	os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
-	go DownloadImages(data, DownloadPath, dataFileName, port.(string))
+	go DownloadImages(data, DownloadPath, dataFileName, port.(string), doneFileName)
 	datas := gin.H{
 		"status": 200,
 		"data":   data,

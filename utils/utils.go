@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"strings"
 
@@ -18,11 +19,12 @@ import (
 
 // Config config
 type Config struct {
-	RunPath  string `json:"runPath"`
-	PathList []Path `json:"pathList"`
-	Cors     string `json:"cors"`
-	RootURL  string `json:"rooturl"`
-	DataFile string `json:"dataFile"`
+	RunPath     string `json:"runPath"`
+	PathList    []Path `json:"pathList"`
+	Cors        string `json:"cors"`
+	RootURL     string `json:"rooturl"`
+	RunningFile string `json:"runngingFile"`
+	DoneFile    string `json:"doneFile"`
 }
 
 // Path path
@@ -31,18 +33,13 @@ type Path struct {
 	Path  string `json:"path"`
 }
 
-// TempData temp data
-type TempData struct {
-	Running []SaveData `json:"running"`
-	Done    []SaveData `json:"done"`
-}
-
 // SaveData save data
 type SaveData struct {
 	Total     int    `json:"total"`
 	Completed int    `json:"completed"`
 	Key       string `json:"key"`
 	Path      string `json:"path"`
+	Percent   int    `json:"percent"`
 }
 
 // SetConfigMiddleWare set config
@@ -160,7 +157,7 @@ func IsDir(path string) bool {
 }
 
 // GetDataFile get data file
-func GetDataFile(d string) (j TempData) {
+func GetDataFile(d string) (j []*SaveData) {
 	data, _ := ioutil.ReadFile(d)
 	var (
 		index int = len(data)
@@ -173,4 +170,9 @@ func GetDataFile(d string) (j TempData) {
 		return
 	}
 	return
+}
+
+// Round round
+func Round(x float64) int {
+	return int(math.Floor(x + 0/5))
 }

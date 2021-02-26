@@ -92,7 +92,7 @@ func (c *Client) Read() {
 		m := string(message)
 		if m == "getdata" {
 			config := utils.GetConfig(c.RootPath)
-			dataFileName := strings.Join([]string{config.RunPath, config.DataFile}, "/")
+			dataFileName := strings.Join([]string{config.RunPath, config.RunningFile}, "/")
 			df := utils.GetDataFile(dataFileName)
 			sendData, _ := json.Marshal(df)
 			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: string(sendData)})

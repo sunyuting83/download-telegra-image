@@ -16,7 +16,7 @@ import (
 )
 
 // DownloadImages Download Images
-func DownloadImages(l []string, p, dataFile, port string) bool {
+func DownloadImages(l []string, p, dataFile, port, doneFileName string) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
 	var dialer *websocket.Dialer
@@ -31,7 +31,7 @@ func DownloadImages(l []string, p, dataFile, port string) bool {
 		go SavePic(item, p, i, dataFile, conn)
 	}
 	wg.Wait()
-	ChangeDataStatus(dataFile, p, conn)
+	ChangeDataStatus(dataFile, p, doneFileName, conn)
 	return true
 }
 
@@ -58,9 +58,10 @@ func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
 	data := utils.GetDataFile(dataFile)
-	for i, item := range data.Running {
+	for i, item := range data {
 		if item.Key == key {
-			data.Running[i] = utils.SaveData{Total: item.Total, Completed: item.Completed + 1, Key: item.Key, Path: item.Path}
+			precent := utils.Round(float64(item.Completed+1) / float64(item.Total) * float64(100))
+			data[i] = &utils.SaveData{Total: item.Total, Completed: item.Completed + 1, Key: item.Key, Path: item.Path, Percent: precent}
 			break
 		}
 	}
@@ -89,25 +90,28 @@ func ZeroFill(i string) (x string) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(dataFile, path string, conn *websocket.Conn) {
+func ChangeDataStatus(dataFile, path, doneFileName string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
 	data := utils.GetDataFile(dataFile)
-	Arrlen := len(data.Running)
-	for i, item := range data.Running {
+	done := utils.GetDataFile(doneFileName)
+	Arrlen := len(data)
+	for i, item := range data {
 		if item.Key == key {
 			if i == Arrlen-1 {
-				data.Running = data.Running[0:i]
-				data.Done = append(data.Done, utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				data = data[0:i]
+				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
 				break
 			} else {
-				data.Running = append(data.Running[0:i], data.Running[i+1:]...)
-				data.Done = append(data.Done, utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
+				data = append(data[0:i], data[i+1:]...)
+				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path})
 				break
 			}
 		}
 	}
 	saveData, _ := json.Marshal(data)
 	_ = ioutil.WriteFile(dataFile, saveData, 0644)
+	doneData, _ := json.Marshal(done)
+	_ = ioutil.WriteFile(dataFile, doneData, 0644)
 	conn.WriteMessage(websocket.TextMessage, saveData)
 	return
 }
