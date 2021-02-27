@@ -33,15 +33,6 @@ type Path struct {
 	Path  string `json:"path"`
 }
 
-// SaveData save data
-type SaveData struct {
-	Total     int    `json:"total"`
-	Completed int    `json:"completed"`
-	Key       string `json:"key"`
-	Path      string `json:"path"`
-	Percent   int    `json:"percent"`
-}
-
 // SetConfigMiddleWare set config
 func SetConfigMiddleWare(d, port string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -154,22 +145,6 @@ func IsDir(path string) bool {
 		return false
 	}
 	return s.IsDir()
-}
-
-// GetDataFile get data file
-func GetDataFile(d string) (j []*SaveData) {
-	data, _ := ioutil.ReadFile(d)
-	var (
-		index int = len(data)
-	)
-	index = bytes.IndexByte(data, 0)
-	if index != -1 {
-		data = data[:index]
-	}
-	if err := json.Unmarshal(data, &j); err != nil {
-		return
-	}
-	return
 }
 
 // Round round
