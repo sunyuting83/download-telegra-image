@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"pulltg/database"
 	"pulltg/utils"
 	"strconv"
 	"strings"
@@ -14,8 +14,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var datalist *database.DataList
+
 // DownloadImages Download Images
-func DownloadImages(l []string, p, dataFile, port, doneFileName string) bool {
+func DownloadImages(l []string, p, port string) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
 	var dialer *websocket.Dialer
@@ -27,17 +29,17 @@ func DownloadImages(l []string, p, dataFile, port, doneFileName string) bool {
 	for i, item := range l {
 		wg.Add(1)
 		// time.Sleep(time.Duration(3) * time.Second)
-		go SavePic(item, p, i, dataFile, conn)
+		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
-	ChangeDataStatus(dataFile, p, doneFileName, conn)
+	ChangeDataStatus(p, conn)
 	return true
 }
 
 var wg sync.WaitGroup
 
 //SavePic Save Pic
-func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
+func SavePic(url, path string, i int, conn *websocket.Conn) {
 	defer wg.Add(-1)
 	// resp, err := http.Get(url)
 	// if err != nil {
@@ -56,16 +58,10 @@ func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 	typ := strings.Join([]string{".", tp[tn]}, "")
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
-	data := utils.GetDataFile(dataFile)
-	for i, item := range data {
-		if item.Key == key {
-			precent := utils.Round(float64(item.Completed+1) / float64(item.Total) * float64(100))
-			data[i] = &utils.SaveData{Total: item.Total, Completed: item.Completed + 1, Key: item.Key, Path: item.Path, Percent: precent}
-			break
-		}
-	}
-	saveData, _ := json.Marshal(data)
-	go SaveDataToFile(dataFile, saveData)
+
+	datalist.UpdateCompleted(key)
+	dataList, _ := datalist.GetData(true)
+	saveData, _ := database.Encode(dataList)
 
 	time.Sleep(time.Duration(3) * time.Second)
 	// go SaveDataToFile(fileName, body)
@@ -101,28 +97,11 @@ func ZeroFill(i string) (x string) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(dataFile, path, doneFileName string, conn *websocket.Conn) {
+func ChangeDataStatus(path string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
-	data := utils.GetDataFile(dataFile)
-	done := utils.GetDataFile(doneFileName)
-	Arrlen := len(data)
-	for i, item := range data {
-		if item.Key == key {
-			if i == Arrlen-1 {
-				data = data[0:i]
-				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path, Percent: 100})
-				break
-			} else {
-				data = append(data[0:i], data[i+1:]...)
-				done = append(done, &utils.SaveData{Total: item.Total, Completed: item.Completed, Key: item.Key, Path: item.Path, Percent: 100})
-				break
-			}
-		}
-	}
-	saveData, _ := json.Marshal(data)
-	go SaveDataToFile(dataFile, saveData)
-	doneData, _ := json.Marshal(done)
-	go SaveDataToFile(doneFileName, doneData)
+	datalist.UpdateStatus(key)
+	dataList, _ := datalist.GetData(true)
+	saveData, _ := database.Encode(dataList)
 	go WsWriter(conn, saveData)
 	return
 }

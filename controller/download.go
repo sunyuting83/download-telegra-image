@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"pulltg/database"
 	"pulltg/utils"
 	"strings"
 
@@ -66,20 +65,21 @@ func Download(c *gin.Context) {
 		c.JSON(http.StatusOK, errs)
 		return
 	}
+
+	var datalist *database.DataList
 	// save running data to file
-	dataFileName := strings.Join([]string{config.RunPath, config.RunningFile}, "/")
-	// save done data to file
-	doneFileName := strings.Join([]string{config.RunPath, config.DoneFile}, "/")
-	// fmt.Println(utils.MakeMD5(DownloadPath))
-	df := utils.GetDataFile(dataFileName)
-	df = append(df, &utils.SaveData{Total: len(data), Completed: 0, Key: utils.MakeMD5(DownloadPath), Path: DownloadPath})
-	saveData, _ := json.Marshal(df)
-	_ = ioutil.WriteFile(dataFileName, saveData, 0644)
+	datalist = &database.DataList{Total: len(data), Completed: 0, Keys: utils.MakeMD5(DownloadPath), Path: DownloadPath, Percent: 0, Type: true}
+	dberr := datalist.Insert()
+	if dberr != nil {
+		errs = GetErrorMessage("Failed to get data")
+		c.JSON(http.StatusOK, errs)
+		return
+	}
 	port, _ := c.Get("port")
 	// make download path
 	os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
-	go DownloadImages(data, DownloadPath, dataFileName, port.(string), doneFileName)
+	go DownloadImages(data, DownloadPath, port.(string))
 	datas := gin.H{
 		"status": 200,
 		"data":   data,

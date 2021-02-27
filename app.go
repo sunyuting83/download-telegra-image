@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	orm "pulltg/database"
 	"pulltg/router"
 	"pulltg/ws"
 	"strings"
@@ -17,8 +18,10 @@ func main() {
 	flag.StringVar(&port, "p", "13002", "default port")
 	flag.StringVar(&d, "d", "/etc/roubian", "default path")
 	flag.Parse()
-
+	orm.InitDB(d)
 	gin.SetMode(gin.ReleaseMode)
+	defer orm.Eloquent.Close()
+
 	router := router.InitRouter(d, port)
 	go ws.Manager.Start()
 	router.Run(strings.Join([]string{":", port}, ""))
