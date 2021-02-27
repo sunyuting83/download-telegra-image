@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"pulltg/utils"
 	"strconv"
@@ -40,15 +39,15 @@ var wg sync.WaitGroup
 //SavePic Save Pic
 func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 	defer wg.Add(-1)
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
+	// resp, err := http.Get(url)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// defer resp.Body.Close()
+	// body, err := ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	n := strconv.Itoa(i + 1)
 	si := ZeroFill(n)
 	p := strings.Join([]string{path, "/"}, "")
@@ -66,12 +65,24 @@ func SavePic(url, path string, i int, dataFile string, conn *websocket.Conn) {
 		}
 	}
 	saveData, _ := json.Marshal(data)
-	_ = ioutil.WriteFile(dataFile, saveData, 0644)
+	go SaveDataToFile(dataFile, saveData)
 
 	time.Sleep(time.Duration(3) * time.Second)
-	_ = ioutil.WriteFile(fileName, body, 0644)
+	// go SaveDataToFile(fileName, body)
+	go WsWriter(conn, saveData)
+	fmt.Println(fileName)
+	return
+}
+
+// SaveDataToFile save data to file
+func SaveDataToFile(dataFile string, saveData []byte) {
+	_ = ioutil.WriteFile(dataFile, saveData, 0644)
+	return
+}
+
+// WsWriter ws writer
+func WsWriter(conn *websocket.Conn, saveData []byte) {
 	conn.WriteMessage(websocket.TextMessage, saveData)
-	// fmt.Println(fileName)
 	return
 }
 
@@ -109,9 +120,9 @@ func ChangeDataStatus(dataFile, path, doneFileName string, conn *websocket.Conn)
 		}
 	}
 	saveData, _ := json.Marshal(data)
-	_ = ioutil.WriteFile(dataFile, saveData, 0644)
+	go SaveDataToFile(dataFile, saveData)
 	doneData, _ := json.Marshal(done)
-	_ = ioutil.WriteFile(doneFileName, doneData, 0644)
-	conn.WriteMessage(websocket.TextMessage, saveData)
+	go SaveDataToFile(doneFileName, doneData)
+	go WsWriter(conn, saveData)
 	return
 }
