@@ -1,22 +1,21 @@
 package database
 
 import (
-	"bytes"
-	"encoding/binary"
+	"encoding/json"
 	"pulltg/utils"
 	"time"
 )
 
 // DataList struct
 type DataList struct {
-	ID        int64     `json:"id" gorm:"primary_key, column:id"`
-	Title     string    `json:"title" gorm:"index:idx_name_title, column:title"`
+	ID        int64     `json:"id" gorm:"primary_key;column:id"`
+	Types     bool      `json:"types" gorm:"index:idx_name_types_id;column:types"`
+	Keys      string    `json:"keys" gorm:"varchar(128);index:idx_name_keys_id;column:keys"`
+	Title     string    `json:"title" gorm:"varchar(128);index:idx_name_title_id;column:title"`
 	Total     int       `json:"total" gorm:"column:total"`
 	Completed int       `json:"completed" gorm:"column:completed"`
-	Keys      string    `json:"keys" gorm:"index:idx_name_key, column:keys"`
-	Path      string    `json:"path" gorm:"column:path"`
+	Path      string    `json:"path" gorm:"varchar(128);column:path"`
 	Percent   int       `json:"percent" gorm:"column:percent"`
-	Type      bool      `json:"type" gorm:"index:idx_name_type, column:type"`
 	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
@@ -27,7 +26,7 @@ func (DataList) TableName() string {
 
 // GetData List
 func (datalist *DataList) GetData(types bool) (dataList []*DataList, err error) {
-	if err = Eloquent.Find(&dataList, "type = ?", types).Error; err != nil {
+	if err = Eloquent.Find(&dataList, "types = ?", types).Error; err != nil {
 		return
 	}
 	return
@@ -59,20 +58,20 @@ func (datalist *DataList) UpdateStatus(keys string) (update *DataList, err error
 	if err = Eloquent.First(&update, keys).Error; err != nil {
 		return
 	}
-	datalist.Type = false
+	datalist.Types = false
 	if err = Eloquent.Model(&update).Updates(&datalist).Error; err != nil {
 		return
 	}
 	return
 }
 
-// Encode en code
+// Encode Encode
 func Encode(datalist []*DataList) ([]byte, error) {
-	buf := new(bytes.Buffer)
+	var buf []byte
+	var err error
 
-	if err := binary.Write(buf, binary.LittleEndian, datalist); err != nil {
-		return nil, err
+	if buf, err = json.Marshal(datalist); err != nil {
+		return buf, err
 	}
-
-	return buf.Bytes(), nil
+	return buf, nil
 }

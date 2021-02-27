@@ -68,7 +68,7 @@ func Download(c *gin.Context) {
 
 	var datalist *database.DataList
 	// save running data to file
-	datalist = &database.DataList{Total: len(data), Completed: 0, Keys: utils.MakeMD5(DownloadPath), Path: DownloadPath, Percent: 0, Type: true}
+	datalist = &database.DataList{Total: len(data), Completed: 0, Keys: utils.MakeMD5(DownloadPath), Path: DownloadPath, Percent: 0, Types: true}
 	dberr := datalist.Insert()
 	if dberr != nil {
 		errs = GetErrorMessage("Failed to get data")

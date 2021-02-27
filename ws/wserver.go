@@ -89,7 +89,7 @@ func (c *Client) Read() {
 		}
 		m := string(message)
 		if m == "getdata" {
-			var datalist *database.DataList
+			var datalist database.DataList
 			dataList, _ := datalist.GetData(true)
 			sendData, _ := database.Encode(dataList)
 			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: string(sendData)})
