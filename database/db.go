@@ -19,8 +19,6 @@ func InitDB(d string) {
 	if !Eloquent.HasTable(&DataList{}) {
 		if err := Eloquent.CreateTable(&DataList{}).Error; err != nil {
 			log.Fatal(err)
-		} else {
-			Eloquent.Create(&DataList{})
 		}
 	}
 	Eloquent.SingularTable(true)

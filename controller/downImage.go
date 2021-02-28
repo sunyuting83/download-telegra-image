@@ -14,8 +14,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var datalist *database.DataList
-
 // DownloadImages Download Images
 func DownloadImages(l []string, p, port string) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
@@ -28,10 +26,11 @@ func DownloadImages(l []string, p, port string) bool {
 	}
 	for i, item := range l {
 		wg.Add(1)
-		// time.Sleep(time.Duration(3) * time.Second)
+		time.Sleep(time.Duration(1) * time.Second)
 		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
+	time.Sleep(time.Duration(1) * time.Second)
 	ChangeDataStatus(p, conn)
 	return true
 }
@@ -59,6 +58,7 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
 
+	var datalist database.DataList
 	datalist.UpdateCompleted(key)
 	dataList, _ := datalist.GetData(true)
 	saveData, _ := database.Encode(dataList)
@@ -99,9 +99,10 @@ func ZeroFill(i string) (x string) {
 // ChangeDataStatus change data status
 func ChangeDataStatus(path string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
+	var datalist database.DataList
 	datalist.UpdateStatus(key)
-	dataList, _ := datalist.GetData(true)
-	saveData, _ := database.Encode(dataList)
-	go WsWriter(conn, saveData)
+	dataList, _ := datalist.GetData(false)
+	sendData, _ := database.Encode(dataList)
+	go WsWriter(conn, sendData)
 	return
 }

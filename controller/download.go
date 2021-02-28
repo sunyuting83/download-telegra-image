@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 	"net/url"
-	"os"
 	"pulltg/database"
 	"pulltg/utils"
 	"strings"
@@ -66,18 +65,24 @@ func Download(c *gin.Context) {
 		return
 	}
 
-	var datalist *database.DataList
+	var datalist database.DataList
 	// save running data to file
-	datalist = &database.DataList{Total: len(data), Completed: 0, Keys: utils.MakeMD5(DownloadPath), Path: DownloadPath, Percent: 0, Types: true}
+	datalist.Total = len(data)
+	datalist.Completed = 0
+	datalist.Keys = utils.MakeMD5(DownloadPath)
+	datalist.Path = DownloadPath
+	datalist.Percent = 0
+	datalist.Types = true
+	datalist.Title = title
 	dberr := datalist.Insert()
 	if dberr != nil {
-		errs = GetErrorMessage("Failed to get data")
+		errs = GetErrorMessage("Failed to save data")
 		c.JSON(http.StatusOK, errs)
 		return
 	}
 	port, _ := c.Get("port")
 	// make download path
-	os.MkdirAll(DownloadPath, os.ModePerm)
+	// os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
 	go DownloadImages(data, DownloadPath, port.(string))
 	datas := gin.H{
