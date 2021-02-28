@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"pulltg/utils"
 	"time"
 )
@@ -45,9 +44,8 @@ func (datalist *DataList) UpdateCompleted(keys string) (update DataList, err err
 	if err = Eloquent.First(&update, "keys = ?", keys).Error; err != nil {
 		return
 	}
-	fmt.Println(utils.Round(float64(datalist.Completed+1) / float64(datalist.Total) * float64(100)))
-	datalist.Percent = utils.Round(float64(datalist.Completed+1) / float64(datalist.Total) * float64(100))
-	datalist.Completed = datalist.Completed + 1
+	datalist.Percent = utils.Round(float64(update.Completed+1) / float64(update.Total) * float64(100))
+	datalist.Completed = update.Completed + 1
 	if err = Eloquent.Model(&update).Updates(&datalist).Error; err != nil {
 		return
 	}
