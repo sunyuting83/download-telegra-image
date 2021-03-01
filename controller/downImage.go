@@ -66,7 +66,7 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 
 	// time.Sleep(time.Duration(3) * time.Second)
 	go SaveDataToFile(fileName, body)
-	if serr != nil {
+	if serr == nil {
 		WsWriter(conn, saveData)
 	}
 	// fmt.Println(fileName)
