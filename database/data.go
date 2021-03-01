@@ -58,7 +58,6 @@ func (datalist *DataList) UpdateStatus(keys string) (update DataList, err error)
 	if err = Eloquent.First(&update, "keys = ?", keys).Error; err != nil {
 		return
 	}
-	datalist.Types = false
 	if err = Eloquent.Model(&update).Updates(&datalist).Error; err != nil {
 		return
 	}

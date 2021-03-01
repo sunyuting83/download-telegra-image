@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"pulltg/database"
 	"pulltg/utils"
@@ -26,11 +27,11 @@ func DownloadImages(l []string, p, port string) bool {
 	}
 	for i, item := range l {
 		wg.Add(1)
-		time.Sleep(time.Duration(1) * time.Second)
+		time.Sleep(time.Duration(150) * time.Millisecond)
 		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
-	time.Sleep(time.Duration(1) * time.Second)
+	time.Sleep(time.Duration(150) * time.Millisecond)
 	ChangeDataStatus(p, conn)
 	return true
 }
@@ -40,15 +41,15 @@ var wg sync.WaitGroup
 //SavePic Save Pic
 func SavePic(url, path string, i int, conn *websocket.Conn) {
 	defer wg.Add(-1)
-	// resp, err := http.Get(url)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// defer resp.Body.Close()
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
 	n := strconv.Itoa(i + 1)
 	si := ZeroFill(n)
 	p := strings.Join([]string{path, "/"}, "")
@@ -58,15 +59,16 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
 
+	time.Sleep(time.Duration(150) * time.Millisecond)
 	var datalist database.DataList
 	datalist.UpdateCompleted(key)
 	dataList, _ := datalist.GetData(true)
 	saveData, _ := database.Encode(dataList)
 
-	time.Sleep(time.Duration(3) * time.Second)
-	// go SaveDataToFile(fileName, body)
-	go WsWriter(conn, saveData)
-	fmt.Println(fileName)
+	// time.Sleep(time.Duration(3) * time.Second)
+	go SaveDataToFile(fileName, body)
+	WsWriter(conn, saveData)
+	// fmt.Println(fileName)
 	return
 }
 
@@ -100,9 +102,10 @@ func ZeroFill(i string) (x string) {
 func ChangeDataStatus(path string, conn *websocket.Conn) {
 	key := utils.MakeMD5(path)
 	var datalist database.DataList
+	datalist.Types = false
 	datalist.UpdateStatus(key)
-	dataList, _ := datalist.GetData(false)
+	dataList, _ := datalist.GetData(true)
 	sendData, _ := database.Encode(dataList)
-	go WsWriter(conn, sendData)
+	WsWriter(conn, sendData)
 	return
 }

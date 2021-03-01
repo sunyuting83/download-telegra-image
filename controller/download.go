@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"net/url"
+	"os"
 	"pulltg/database"
 	"pulltg/utils"
 	"strings"
@@ -82,7 +83,7 @@ func Download(c *gin.Context) {
 	}
 	port, _ := c.Get("port")
 	// make download path
-	// os.MkdirAll(DownloadPath, os.ModePerm)
+	os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
 	go DownloadImages(data, DownloadPath, port.(string))
 	datas := gin.H{
