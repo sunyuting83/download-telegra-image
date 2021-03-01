@@ -85,7 +85,7 @@ func Download(c *gin.Context) {
 	// make download path
 	os.MkdirAll(DownloadPath, os.ModePerm)
 	// start download
-	go DownloadImages(data, DownloadPath, port.(string))
+	go DownloadImages(data, DownloadPath, port.(string), len(data))
 	datas := gin.H{
 		"status": 200,
 		"data":   data,

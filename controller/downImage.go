@@ -16,7 +16,7 @@ import (
 )
 
 // DownloadImages Download Images
-func DownloadImages(l []string, p, port string) bool {
+func DownloadImages(l []string, p, port string, length int) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
 	var dialer *websocket.Dialer
@@ -27,12 +27,12 @@ func DownloadImages(l []string, p, port string) bool {
 	}
 	for i, item := range l {
 		wg.Add(1)
-		time.Sleep(time.Duration(150) * time.Millisecond)
+		time.Sleep(time.Duration(200) * time.Millisecond)
 		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
-	time.Sleep(time.Duration(150) * time.Millisecond)
-	ChangeDataStatus(p, conn)
+	time.Sleep(time.Duration(200) * time.Millisecond)
+	ChangeDataStatus(p, conn, length)
 	return true
 }
 
@@ -58,16 +58,17 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	typ := strings.Join([]string{".", tp[tn]}, "")
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
-
-	time.Sleep(time.Duration(150) * time.Millisecond)
+	time.Sleep(time.Duration(200) * time.Millisecond)
 	var datalist database.DataList
 	datalist.UpdateCompleted(key)
 	dataList, _ := datalist.GetData(true)
-	saveData, _ := database.Encode(dataList)
+	saveData, serr := database.Encode(dataList)
 
 	// time.Sleep(time.Duration(3) * time.Second)
 	go SaveDataToFile(fileName, body)
-	WsWriter(conn, saveData)
+	if serr != nil {
+		WsWriter(conn, saveData)
+	}
 	// fmt.Println(fileName)
 	return
 }
@@ -99,13 +100,35 @@ func ZeroFill(i string) (x string) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(path string, conn *websocket.Conn) {
+func ChangeDataStatus(path string, conn *websocket.Conn, length int) {
 	key := utils.MakeMD5(path)
 	var datalist database.DataList
-	datalist.Types = false
-	datalist.UpdateStatus(key)
+	if length == GetFileCount(path) {
+		fmt.Println(length, GetFileCount(path))
+		datalist.Types = false
+		datalist.Completed = length
+		datalist.Percent = 100
+		datalist.UpdateStatus(key)
+	}
+	time.Sleep(time.Duration(100) * time.Millisecond)
 	dataList, _ := datalist.GetData(true)
+	fmt.Println(dataList)
 	sendData, _ := database.Encode(dataList)
 	WsWriter(conn, sendData)
 	return
+}
+
+// GetFileCount Get File Count
+func GetFileCount(p string) int {
+	i := 0
+	files, err := ioutil.ReadDir(p)
+	if err != nil {
+		return 0
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			i++
+		}
+	}
+	return i
 }
