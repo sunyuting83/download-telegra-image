@@ -90,9 +90,9 @@ func (c *Client) Read() {
 		m := string(message)
 		if m == "getdata" {
 			var datalist database.DataList
-			dataList, _ := datalist.GetData(true)
-			sendData, err := database.Encode(dataList)
+			dataList, err := datalist.GetData(true)
 			if err == nil {
+				sendData, _ := database.Encode(dataList)
 				jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: string(sendData)})
 				Manager.Broadcast <- jsonMessage
 			}
