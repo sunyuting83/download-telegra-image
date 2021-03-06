@@ -26,6 +26,7 @@ func (DataList) TableName() string {
 
 // GetData List
 func (datalist *DataList) GetData(types bool) (dataList []*DataList, err error) {
+	time.Sleep(time.Duration(100) * time.Millisecond)
 	if err = Eloquent.Find(&dataList, "types = ?", types).Error; err != nil {
 		return
 	}
@@ -40,7 +41,7 @@ func (datalist *DataList) Insert() error {
 
 // UpdateCompleted data
 func (datalist *DataList) UpdateCompleted(keys string) (update DataList, err error) {
-
+	time.Sleep(time.Duration(100) * time.Millisecond)
 	if err = Eloquent.First(&update, "keys = ?", keys).Error; err != nil {
 		return
 	}
@@ -54,7 +55,7 @@ func (datalist *DataList) UpdateCompleted(keys string) (update DataList, err err
 
 // UpdateStatus data
 func (datalist *DataList) UpdateStatus(keys string) (update DataList, err error) {
-
+	time.Sleep(time.Duration(100) * time.Millisecond)
 	if err = Eloquent.First(&update, "keys = ?", keys).Error; err != nil {
 		return
 	}

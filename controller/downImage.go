@@ -27,7 +27,7 @@ func DownloadImages(l []string, p, port string, length int) bool {
 	}
 	for i, item := range l {
 		wg.Add(1)
-		time.Sleep(time.Duration(200) * time.Millisecond)
+		time.Sleep(time.Duration(100) * time.Millisecond)
 		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
@@ -58,7 +58,7 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	typ := strings.Join([]string{".", tp[tn]}, "")
 	fileName := strings.Join([]string{p, si, typ}, "")
 	key := utils.MakeMD5(path)
-	time.Sleep(time.Duration(200) * time.Millisecond)
+	time.Sleep(time.Duration(100) * time.Millisecond)
 	// time.Sleep(time.Duration(3) * time.Second)
 	go SaveDataToFile(fileName, body)
 	var datalist database.DataList
