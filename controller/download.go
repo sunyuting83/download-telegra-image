@@ -73,7 +73,7 @@ func Download(c *gin.Context) {
 	datalist.Keys = utils.MakeMD5(DownloadPath)
 	datalist.Path = DownloadPath
 	datalist.Percent = 0
-	datalist.Types = true
+	datalist.Types = 0
 	datalist.Title = title
 	dberr := datalist.Insert()
 	if dberr != nil {

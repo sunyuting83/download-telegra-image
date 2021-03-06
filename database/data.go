@@ -9,7 +9,7 @@ import (
 // DataList struct
 type DataList struct {
 	ID        int64     `json:"id" gorm:"primary_key;column:id"`
-	Types     bool      `json:"types" gorm:"index:idx_name_types_id;column:types"`
+	Types     int       `json:"types" gorm:"index:idx_name_types_id;column:types"`
 	Keys      string    `json:"keys" gorm:"varchar(128);index:idx_name_keys_id;column:keys"`
 	Title     string    `json:"title" gorm:"varchar(128);index:idx_name_title_id;column:title"`
 	Total     int       `json:"total" gorm:"column:total"`
@@ -25,7 +25,7 @@ func (DataList) TableName() string {
 }
 
 // GetData List
-func (datalist *DataList) GetData(types bool) (dataList []*DataList, err error) {
+func (datalist *DataList) GetData(types int) (dataList []*DataList, err error) {
 	time.Sleep(time.Duration(100) * time.Millisecond)
 	if err = Eloquent.Find(&dataList, "types = ?", types).Error; err != nil {
 		return

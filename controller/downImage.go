@@ -63,7 +63,7 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	go SaveDataToFile(fileName, body)
 	var datalist database.DataList
 	datalist.UpdateCompleted(key)
-	dataList, derr := datalist.GetData(true)
+	dataList, derr := datalist.GetData(0)
 	if derr == nil {
 		saveData, _ := database.Encode(dataList)
 		WsWriter(conn, saveData)
@@ -103,13 +103,13 @@ func ChangeDataStatus(path string, conn *websocket.Conn, length int) {
 	key := utils.MakeMD5(path)
 	var datalist database.DataList
 	if length == GetFileCount(path) {
-		datalist.Types = false
+		datalist.Types = 1
 		datalist.Completed = length
 		datalist.Percent = 100
 		datalist.UpdateStatus(key)
 	}
 	time.Sleep(time.Duration(100) * time.Millisecond)
-	dataList, err := datalist.GetData(true)
+	dataList, err := datalist.GetData(0)
 	if err == nil {
 		sendData, _ := database.Encode(dataList)
 		WsWriter(conn, sendData)
