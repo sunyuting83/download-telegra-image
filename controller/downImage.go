@@ -15,11 +15,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//  https://blog.csdn.net/taoerchun/article/details/108402296
+type WsConn struct {
+	*websocket.Dialer
+	Mux sync.RWMutex
+}
+
 // DownloadImages Download Images
 func DownloadImages(l []string, p, port string, length int) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
-	var dialer *websocket.Dialer
+	var dialer *WsConn
 
 	conn, _, err := dialer.Dial(u.String(), nil)
 	if err != nil {
