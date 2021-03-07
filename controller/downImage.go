@@ -65,8 +65,10 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	datalist.UpdateCompleted(key)
 	dataList, derr := datalist.GetData(0)
 	if derr == nil {
-		saveData, _ := database.Encode(dataList)
-		WsWriter(conn, saveData)
+		saveData, err := database.Encode(dataList)
+		if err == nil {
+			WsWriter(conn, saveData)
+		}
 	}
 	// fmt.Println(fileName)
 	return
