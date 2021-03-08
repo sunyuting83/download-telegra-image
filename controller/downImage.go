@@ -34,18 +34,18 @@ func DownloadImages(l []string, p, port string, length int) bool {
 	for i, item := range l {
 		wg.Add(1)
 		time.Sleep(time.Duration(100) * time.Millisecond)
-		go SavePic(item, p, i, conn)
+		go SavePic(item, p, i, conn, dialer)
 	}
 	wg.Wait()
 	time.Sleep(time.Duration(200) * time.Millisecond)
-	ChangeDataStatus(p, conn, length)
+	ChangeDataStatus(p, conn, length, dialer)
 	return true
 }
 
 var wg sync.WaitGroup
 
 //SavePic Save Pic
-func SavePic(url, path string, i int, conn *websocket.Conn) {
+func SavePic(url, path string, i int, conn *websocket.Conn, dialer *WsConn) {
 	defer wg.Add(-1)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -73,7 +73,7 @@ func SavePic(url, path string, i int, conn *websocket.Conn) {
 	if derr == nil {
 		saveData, err := database.Encode(dataList)
 		if err == nil {
-			WsWriter(conn, saveData)
+			WsWriter(conn, saveData, dialer)
 		}
 	}
 	// fmt.Println(fileName)
@@ -87,8 +87,10 @@ func SaveDataToFile(dataFile string, saveData []byte) {
 }
 
 // WsWriter ws writer
-func WsWriter(conn *websocket.Conn, saveData []byte) {
+func WsWriter(conn *websocket.Conn, saveData []byte, dialer *WsConn) {
+	dialer.Mux.Lock()
 	conn.WriteMessage(websocket.TextMessage, saveData)
+	dialer.Mux.Unlock()
 	return
 }
 
@@ -107,7 +109,7 @@ func ZeroFill(i string) (x string) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(path string, conn *websocket.Conn, length int) {
+func ChangeDataStatus(path string, conn *websocket.Conn, length int, dialer *WsConn) {
 	key := utils.MakeMD5(path)
 	var datalist database.DataList
 	if length == GetFileCount(path) {
@@ -120,7 +122,7 @@ func ChangeDataStatus(path string, conn *websocket.Conn, length int) {
 	dataList, err := datalist.GetData(0)
 	if err == nil {
 		sendData, _ := database.Encode(dataList)
-		WsWriter(conn, sendData)
+		WsWriter(conn, sendData, dialer)
 	}
 	return
 }
