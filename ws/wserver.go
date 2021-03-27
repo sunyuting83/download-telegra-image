@@ -114,17 +114,13 @@ func (c *Client) Write() {
 	}()
 
 	for {
-
-		c.Mux.Lock()
 		select {
 		case message, ok := <-c.Send:
 			if !ok {
 				c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
-				c.Mux.Unlock()
 				return
 			}
 			c.Socket.WriteMessage(websocket.TextMessage, message)
-			c.Mux.Unlock()
 		}
 	}
 }

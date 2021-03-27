@@ -19,9 +19,10 @@ func WsPage(c *gin.Context) {
 	}
 	// websocket connect
 	client := &ws.Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte)}
-
 	ws.Manager.Register <- client
 
 	go client.Read()
+	client.Mux.Lock()
 	go client.Write()
+	client.Mux.Unlock()
 }
