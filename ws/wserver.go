@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"pulltg/database"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -20,6 +21,7 @@ type Client struct {
 	ID     string
 	Socket *websocket.Conn
 	Send   chan []byte
+	Mux    sync.RWMutex
 }
 
 // Message is an object for websocket message which is mapped to json type
@@ -112,13 +114,17 @@ func (c *Client) Write() {
 	}()
 
 	for {
+
+		c.Mux.Lock()
 		select {
 		case message, ok := <-c.Send:
 			if !ok {
 				c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
+				c.Mux.Unlock()
 				return
 			}
 			c.Socket.WriteMessage(websocket.TextMessage, message)
+			c.Mux.Unlock()
 		}
 	}
 }

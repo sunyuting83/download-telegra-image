@@ -29,7 +29,6 @@ func GetPathData(c *gin.Context) {
 		"data":   pathData,
 	}
 	c.JSON(http.StatusOK, data)
-	return
 }
 
 // GetPathName Get Path Name

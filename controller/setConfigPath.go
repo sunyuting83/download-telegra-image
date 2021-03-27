@@ -57,7 +57,6 @@ func SetConfigPathData(c *gin.Context) {
 		"message": "OK",
 	}
 	c.JSON(http.StatusOK, data)
-	return
 }
 
 // checkHasPath check has path

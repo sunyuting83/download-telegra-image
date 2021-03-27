@@ -15,17 +15,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-//  https://blog.csdn.net/taoerchun/article/details/108402296
-type WsConn struct {
-	*websocket.Dialer
-	Mux sync.RWMutex
-}
-
 // DownloadImages Download Images
 func DownloadImages(l []string, p, port string, length int) bool {
 	addr := strings.Join([]string{"localhost", port}, ":")
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/api/downlist"}
-	var dialer *WsConn
+	var dialer *websocket.Dialer
 
 	conn, _, err := dialer.Dial(u.String(), nil)
 	if err != nil {
@@ -34,18 +28,18 @@ func DownloadImages(l []string, p, port string, length int) bool {
 	for i, item := range l {
 		wg.Add(1)
 		time.Sleep(time.Duration(100) * time.Millisecond)
-		go SavePic(item, p, i, conn, dialer)
+		go SavePic(item, p, i, conn)
 	}
 	wg.Wait()
 	time.Sleep(time.Duration(200) * time.Millisecond)
-	ChangeDataStatus(p, conn, length, dialer)
+	ChangeDataStatus(p, conn, length)
 	return true
 }
 
 var wg sync.WaitGroup
 
 //SavePic Save Pic
-func SavePic(url, path string, i int, conn *websocket.Conn, dialer *WsConn) {
+func SavePic(url, path string, i int, conn *websocket.Conn) {
 	defer wg.Add(-1)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -73,25 +67,20 @@ func SavePic(url, path string, i int, conn *websocket.Conn, dialer *WsConn) {
 	if derr == nil {
 		saveData, err := database.Encode(dataList)
 		if err == nil {
-			WsWriter(conn, saveData, dialer)
+			go WsWriter(conn, saveData)
 		}
 	}
 	// fmt.Println(fileName)
-	return
 }
 
 // SaveDataToFile save data to file
 func SaveDataToFile(dataFile string, saveData []byte) {
 	_ = ioutil.WriteFile(dataFile, saveData, 0644)
-	return
 }
 
 // WsWriter ws writer
-func WsWriter(conn *websocket.Conn, saveData []byte, dialer *WsConn) {
-	dialer.Mux.Lock()
+func WsWriter(conn *websocket.Conn, saveData []byte) {
 	conn.WriteMessage(websocket.TextMessage, saveData)
-	dialer.Mux.Unlock()
-	return
 }
 
 // ZeroFill leading zero fill
@@ -109,7 +98,7 @@ func ZeroFill(i string) (x string) {
 }
 
 // ChangeDataStatus change data status
-func ChangeDataStatus(path string, conn *websocket.Conn, length int, dialer *WsConn) {
+func ChangeDataStatus(path string, conn *websocket.Conn, length int) {
 	key := utils.MakeMD5(path)
 	var datalist database.DataList
 	if length == GetFileCount(path) {
@@ -122,9 +111,8 @@ func ChangeDataStatus(path string, conn *websocket.Conn, length int, dialer *WsC
 	dataList, err := datalist.GetData(0)
 	if err == nil {
 		sendData, _ := database.Encode(dataList)
-		WsWriter(conn, sendData, dialer)
+		go WsWriter(conn, sendData)
 	}
-	return
 }
 
 // GetFileCount Get File Count

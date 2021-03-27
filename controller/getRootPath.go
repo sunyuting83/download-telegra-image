@@ -29,5 +29,4 @@ func GetRootPathData(c *gin.Context) {
 		"data":   list,
 	}
 	c.JSON(http.StatusOK, data)
-	return
 }

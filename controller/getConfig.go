@@ -16,5 +16,4 @@ func GetConfigData(c *gin.Context) {
 		"config": config.PathList,
 	}
 	c.JSON(http.StatusOK, data)
-	return
 }

@@ -92,7 +92,6 @@ func Download(c *gin.Context) {
 		"title":  title,
 	}
 	c.JSON(http.StatusOK, datas)
-	return
 }
 
 // GetErrorMessage get error message
